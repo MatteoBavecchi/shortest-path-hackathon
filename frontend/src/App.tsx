@@ -17,8 +17,10 @@ function App() {
   const handleFindRoute = () => {};
 
   return (
-    <div className='flex'>
-      <div className='w-1/4 p-4'>
+    <div className='flex bg-black'>
+      <div className='w-1/4 p-4 '>
+        <h1 className='text-white font-bold'>Shortest path hackathon</h1>
+        <div className='mt-24'>
         <input
           type='text'
           value={pointA}
@@ -35,24 +37,27 @@ function App() {
         />
         <button
           onClick={handleFindRoute}
-          className='w-full p-2 bg-blue-500 text-white rounded'
+          className='w-full p-2 mt-6 bg-blue-500 text-white rounded'
         >
           Find Route
         </button>
+        </div>
       </div>
       <div className='w-3/4'>
-        <MapContainer
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          center={[41.8719, 12.5674]}
-          zoom={6}
-          className='w-full h-screen'
-        >
-          <TileLayer url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' />
-          {/* {points.map((point, index) => (
-            <Marker position={[point.lat, point.lng]} key={index} />
-          ))} */}
-        </MapContainer>
+      <MapContainer
+  className="full-height-map"
+  c
+  zoom={6}
+  minZoom={3}
+  maxZoom={19}
+  maxBounds={[[-85.06, -180], [85.06, 180]]}
+  scrollWheelZoom={true}>
+  <TileLayer
+    attribution='&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/about" target="_blank">OpenStreetMap</a> contributors'
+    url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+  />
+  {/* TODO: Add markers */}
+</MapContainer>
       </div>
     </div>
   );
