@@ -1,4 +1,4 @@
-#ruby 2.3.1 recomended
+# frozen_string_literal: true
 
 class DijkstraGraph
   attr_reader :graph, :nodes, :previous, :distance #getter methods
@@ -80,7 +80,7 @@ class DijkstraGraph
 
 # Gets all shortests paths using dijkstra
 
-  def all_shortest_paths(source)
+  def shortest_paths(source)
     @graph_paths=[]
     @source = source
     dijkstra source
@@ -99,25 +99,6 @@ class DijkstraGraph
     @graph_paths
   end
 
-  def shortest_path(source, dest)
-    @graph_paths=[]
-    @source = source
-    dijkstra source
-
-    @path=[]
-
-    find_path dest
-
-    actual_distance=if @distance[dest] != INFINITY
-                      @distance[dest]
-                    else
-                      "no path"
-                    end
-    @graph_paths<< "Target(#{dest})  #{@path.join("-->")} : #{actual_distance}"
-
-    @graph_paths
-  end
-
   # print result
 
   def print_result
@@ -127,4 +108,3 @@ class DijkstraGraph
   end
 
 end
-
