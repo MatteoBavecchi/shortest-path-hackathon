@@ -43,10 +43,10 @@ function App() {
         </button>
         </div>
       </div>
-      <div className='w-3/4'>
+      <div className='w-3/4 rounded-md'>
       <MapContainer
-  className="full-height-map"
-  c
+  className="full-height-map "
+  
   zoom={6}
   minZoom={3}
   maxZoom={19}
