@@ -113,9 +113,7 @@ class DijkstraGraph
                     else
                       "no path"
                     end
-    @graph_paths<< "Target(#{dest})  #{@path.join("-->")} : #{actual_distance}"
-
-    @graph_paths
+    @path
   end
 
   # print result
@@ -124,6 +122,14 @@ class DijkstraGraph
     @graph_paths.each do |graph|
       puts graph
     end
+  end
+
+  def shortest_path_with_intermediates(stops = [])
+    full_path = []
+    stops.each_cons(2) do |a|
+      full_path << shortest_path(a[0], a[1])
+    end
+    full_path
   end
 
 end
