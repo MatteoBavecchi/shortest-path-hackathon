@@ -1,4 +1,4 @@
-#ruby 2.3.1 recomended
+# frozen_string_literal: true
 
 class DijkstraGraph
   attr_reader :graph, :nodes, :previous, :distance #getter methods
