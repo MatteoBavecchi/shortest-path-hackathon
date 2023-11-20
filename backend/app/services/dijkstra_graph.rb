@@ -3,7 +3,7 @@
 class DijkstraGraph
   attr_reader :graph, :nodes, :previous, :distance # getter methods
 
-  INFINITY = 1 << 64
+  INFINITY = Float::INFINITY
 
   def initialize
     @graph = {} # the graph // {node => { edge1 => weight, edge2 => weight}, node2 => ...
@@ -104,7 +104,7 @@ class DijkstraGraph
                       else
                         'no path'
                       end
-    @path
+    { path: @path, total_distance: actual_distance }
   end
 
   # print result
@@ -123,10 +123,10 @@ class DijkstraGraph
     full_path
   end
 
-  def dijkstra_with_autonomy_and_recharge(start, goal, autonomy_limit, recharge_points = nil)
+  def shortest_path_with_autonomy_and_recharge(start, goal, autonomy_limit, recharge_points = nil)
     distances = Hash.new(Float::INFINITY)
     distances[start] = 0
-    priority_queue = [[0, start, 0, 0]] # [total distance, current node, autonomy used, stops]
+    priority_queue = [[0, start, 0, []]] # [total distance, current node, autonomy used, stops]
 
     until priority_queue.empty?
       priority_queue.sort! # Sort the queue based on the first element (total distance)
@@ -140,7 +140,7 @@ class DijkstraGraph
 
       graph[current].each do |neighbor, weight|
         new_autonomy = autonomy_used + weight
-        new_stops = stops
+        new_stops = stops.dup
 
         # Check if autonomy limit is not exceeded
         next unless new_autonomy <= autonomy_limit
@@ -149,7 +149,7 @@ class DijkstraGraph
 
         # Check if the neighbor is a recharge point
         if recharge_points.nil? || recharge_points.include?(neighbor)
-          new_stops += 1
+          new_stops.push(neighbor)
           new_autonomy = 0 # Reset autonomy at recharge points
         end
 
@@ -179,6 +179,8 @@ class DijkstraGraph
       end
     end
     path.unshift(start)
-    path
+
+    # Return the path and stops
+    { path: path, stops: stops }
   end
 end
