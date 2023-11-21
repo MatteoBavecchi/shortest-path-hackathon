@@ -8,15 +8,21 @@ import {
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-// Crea un'icona personalizzata
-const customMarkerIcon = L.icon({
-  iconUrl: 'https://images.emojiterra.com/twitter/v14.0/512px/1f535.png', // URL dell'immagine del marker
+
+const markerIconUrls = {
+  'default': 'https://images.emojiterra.com/twitter/v14.0/512px/1f535.png',
+  'grayed': 'grayed.png',
+  'highlighted': "https://www.federmobili.it/wp-content/uploads/2021/01/pallino-arancione.png"
+}
+
+const markerIconProps = {
   iconSize: [10, 10], // dimensioni dell'icona
-  iconAnchor: [0, 0], // punto dell'icona che corrisponderà alla posizione del marker
+  iconAnchor: [5, 5], // punto dell'icona che corrisponderà alla posizione del marker
   popupAnchor: [0, 0], // punto relativo all'icona dove verrà ancorato il popup
   shadowSize: [0, 0], // dimensioni dell'ombra
   shadowAnchor: [0, 0], // punto dell'ombra che corrisponderà all'ombra del marker
-});
+}
+
 interface IPoiProps {
   id: string;
   uniqId: string;
@@ -90,6 +96,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [pois, setPois] = useState<IPoiProps[]>([]);
   const [poisOnMap, setPoisOnMap] = useState<IPoiProps[]>([]);
+  const [highlightedPoisOnMap, setHighlightedPoisOnMap] = useState<IPoiProps[]>([]);
   const [totalDistance, setTotalDistance] = useState<string>();
   const [polyline, setPolyline] = useState<number[][]>([]); // pois?.map((poi) => [poi.latitude, poi.longitude])
 
@@ -119,6 +126,13 @@ function App() {
   //     });
   //   }
   // }, [pointA, pointB, pois]);
+
+  const getIcon = (icon: string) => {
+    return L.icon({
+      iconUrl: icon,
+      ...markerIconProps
+    });
+  }
 
   return (
     <div className="relative">
@@ -172,12 +186,14 @@ function App() {
                       pois.find((poi) => poi.id === point)?.longitude || 0,
                     ])
                   );
-                  setPoisOnMap(
+                  setHighlightedPoisOnMap(
                     pois.filter((poi) =>
                       data.path.find((item) => item === poi.id)
                     )
                   );
-                  setTotalDistance(Math.round(data.total_distance / 1000).toString());
+                  setTotalDistance(
+                    Math.round(data.total_distance / 1000).toString()
+                  );
                 });
               }}
               className="w-full p-2 mt-6  mb-2 bg-white rounded-lg bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10  text-white  z-10 hover:bg-[#fed683] hover:text-black "
@@ -223,7 +239,7 @@ function App() {
             <Marker
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
-              icon={customMarkerIcon}
+              icon={getIcon(markerIconUrls["default"])}
               position={[point.latitude, point.longitude]}
               key={index}
             >
@@ -235,7 +251,25 @@ function App() {
                 {point.name}
               </Tooltip>
             </Marker>
-          ))}
+        ))}
+        {highlightedPoisOnMap?.length &&
+          highlightedPoisOnMap?.map((point, index) => (
+            <Marker
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              icon={getIcon(markerIconUrls["highlighted"])}
+              position={[point.latitude, point.longitude]}
+              key={index}
+            >
+              <Tooltip
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                sticky
+              >
+                {point.name}
+              </Tooltip>
+            </Marker>
+        ))}
         <Polyline pathOptions={{ color: "#6b7280" }} positions={polyline} />
       </MapContainer>
     </div>
