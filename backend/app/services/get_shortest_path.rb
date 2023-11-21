@@ -38,8 +38,6 @@ class GetShortestPath
       end
       hydra.run
 
-      from = '295'
-      to = '370'
       r = graph_struct.shortest_path(from, to)
       pp r
       r
