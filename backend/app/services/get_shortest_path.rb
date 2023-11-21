@@ -25,10 +25,10 @@ class GetShortestPath
       pois = all_pois()
       from = pois.find { _1['id'] == from.to_s }
       to = pois.find { _1['id'] == to.to_s }
-      pois = pois.map do |poi|
-        { poi['id'] => neighbours(poi: poi) }
-        # TODO use DijkstraGraph to get the closest neighbour
-      end
+      # pois = pois.map do |poi|
+      #   { poi['id'] => neighbours(poi: poi) }
+      #   # TODO use DijkstraGraph to get the closest neighbour
+      # end
 
       # returns the path as an ordered list of pois ids
       # path.map { _1[:id] }
