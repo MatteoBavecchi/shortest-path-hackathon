@@ -103,7 +103,7 @@ function App() {
   const [pois, setPois] = useState<IPoiProps[]>([]);
   const [poisOnMap, setPoisOnMap] = useState<IPoiProps[]>([]);
   const [pathPoisOnMap, setPathPoisOnMap] = useState<IPoiProps[]>([]);
-  const [totalDistance, setTotalDistance] = useState<string>();
+  const [totalDistance, setTotalDistance] = useState<string | null>();
   const [polyline, setPolyline] = useState<number[][]>([]);
 
   const handlePointChange = (
@@ -151,6 +151,10 @@ function App() {
           setTotalDistance(Math.round(data.total_distance / 1000).toString());
         else setTotalDistance('');
       });
+    } else {
+      setPolyline([]);
+      setPathPoisOnMap([]);
+      setTotalDistance(null);
     }
   }, [stops, pois]);
 
