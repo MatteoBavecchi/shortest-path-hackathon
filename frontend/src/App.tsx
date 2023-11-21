@@ -15,7 +15,7 @@ const customMarkerIcon = L.icon({
   iconAnchor: [0, 0], // punto dell'icona che corrisponderà alla posizione del marker
   popupAnchor: [0, 0], // punto relativo all'icona dove verrà ancorato il popup
   shadowSize: [0, 0], // dimensioni dell'ombra
-  shadowAnchor: [0, 0] // punto dell'ombra che corrisponderà all'ombra del marker
+  shadowAnchor: [0, 0], // punto dell'ombra che corrisponderà all'ombra del marker
 });
 interface IPoiProps {
   id: string;
@@ -90,6 +90,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [pois, setPois] = useState<IPoiProps[]>([]);
   const [poisOnMap, setPoisOnMap] = useState<IPoiProps[]>([]);
+  const [totalDistance, setTotalDistance] = useState<string>();
   const [polyline, setPolyline] = useState<number[][]>([]); // pois?.map((poi) => [poi.latitude, poi.longitude])
 
   const handlePointAChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -120,41 +121,42 @@ function App() {
   // }, [pointA, pointB, pois]);
 
   return (
-    <div className='relative'>
-          <div className='absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10'>
-      <div onClick={() => setDarkMode(!darkMode)} style={{ cursor: "pointer", fontSize:"35px", color:"white" }}>
-        {darkMode ? '☀' : '☾'}
+    <div className="relative">
+      <div className="absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10">
+        <div
+          onClick={() => setDarkMode(!darkMode)}
+          style={{ cursor: "pointer", fontSize: "35px", color: "white" }}
+        >
+          {darkMode ? "☀" : "☾"}
+        </div>
       </div>
-      </div>
-      <div className='absolute top-10 left-10 mt-56 w-1/4 h-64 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10'>
-
-        
+      <div className="absolute top-10 left-10 mt-56 w-1/4 h-64 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10">
         {pois.length ? (
           <>
             <select
               onChange={handlePointAChange}
-              id='countries'
-              className='w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
+              id="countries"
+              className="w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
             >
               <option>Punto di partenza</option>
               {pois
                 .filter((poi) => poi.id !== pointB)
                 .map((poi) => (
-                  <option key={'start_'.concat(poi.id)} value={poi.id}>
+                  <option key={"start_".concat(poi.id)} value={poi.id}>
                     {poi.name}
                   </option>
                 ))}
             </select>
             <select
               onChange={handlePointBChange}
-              id='countries'
-              className='w-full p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
+              id="countries"
+              className="w-full p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
             >
               <option>Punto di arrivo</option>
               {pois
                 .filter((poi) => poi.id !== pointA)
                 .map((poi) => (
-                  <option key={'end_'.concat(poi.id)} value={poi.id}>
+                  <option key={"end_".concat(poi.id)} value={poi.id}>
                     {poi.name}
                   </option>
                 ))}
@@ -168,22 +170,24 @@ function App() {
                     data?.path?.map((point) => [
                       pois.find((poi) => poi.id === point)?.latitude || 0,
                       pois.find((poi) => poi.id === point)?.longitude || 0,
-                    ]),
+                    ])
                   );
                   setPoisOnMap(
                     pois.filter((poi) =>
-                      data.path.find((item) => item === poi.id),
-                    ),
+                      data.path.find((item) => item === poi.id)
+                    )
                   );
+                  setTotalDistance(Math.round(data.total_distance / 1000).toString());
                 });
               }}
-              className='w-full p-2 mt-6  mb-2 bg-white rounded-lg bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10  text-white  z-10 hover:bg-[#fed683] hover:text-black '
+              className="w-full p-2 mt-6  mb-2 bg-white rounded-lg bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10  text-white  z-10 hover:bg-[#fed683] hover:text-black "
             >
-              Calcola la rotta
+              Calcola il percorso
             </button>
+            {totalDistance && <span>Distanza totale: {totalDistance} Km</span>}
           </>
         ) : (
-          <p className='pl-2'>Loading data...</p>
+          <p className="pl-2">Loading data...</p>
         )}
       </div>
 
@@ -191,7 +195,7 @@ function App() {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         center={[43, 10.69222]}
-        className='w-100% h-screen'
+        className="w-100% h-screen"
         zoom={6}
         minZoom={3}
         maxZoom={19}
@@ -205,18 +209,24 @@ function App() {
           setPoisOnMap(data);
         }}
         scrollWheelZoom={true}
-        style={{ position: 'relative', zIndex: 1 }}
+        style={{ position: "relative", zIndex: 1 }}
       >
         <TileLayer
           url={
             darkMode
-              ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png'
-              : 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png'
+              ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+              : "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
           }
         />
         {poisOnMap?.length &&
           poisOnMap?.map((point, index) => (
-            <Marker icon={customMarkerIcon} position={[point.latitude, point.longitude]} key={index}>
+            <Marker
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              icon={customMarkerIcon}
+              position={[point.latitude, point.longitude]}
+              key={index}
+            >
               <Tooltip
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
@@ -226,7 +236,7 @@ function App() {
               </Tooltip>
             </Marker>
           ))}
-        <Polyline pathOptions={{ color: 'lime' }} positions={polyline} />
+        <Polyline pathOptions={{ color: "#6b7280" }} positions={polyline} />
       </MapContainer>
     </div>
   );
