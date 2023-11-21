@@ -22,13 +22,27 @@ class GetShortestPath
     # @return [[ID]] ordered list of point ids
     #
     def call(from:, to:)
+      graph_struct = DijkstraGraph.new
       pois = all_pois()
       from = pois.find { _1['id'] == from.to_s }
       to = pois.find { _1['id'] == to.to_s }
+      hydra = Typhoeus::Hydra.hydra
       pois = pois.map do |poi|
-        { poi['id'] => neighbours(poi: poi) }
-        # TODO use DijkstraGraph to get the closest neighbour
+        # request = neighbours(poi: poi)
+        # request.on_complete do |response|
+        #   puts response
+        #   binding.irb
+        #   pois = response['poisByDistance'].drop 1
+        #   pois.each { |neighbour| binding.irb; graph_struct.add_edge(poi['id'], neighbour['id'], neighbour['distance']) }
+        # end
+        # hydra.queue neighbours(poi: poi)
+
+        neighbours(poi: poi).each do |neighbour|
+          graph_struct.add_edge(poi['id'], neighbour['id'], neighbour['distance'])
+        end
       end
+      # hydra.run
+      return graph_struct.shortest_path("362", "293")
 
       # returns the path as an ordered list of pois ids
       # path.map { _1[:id] }
@@ -55,6 +69,13 @@ class GetShortestPath
       end
 
       def neighbours(poi:, distance: 93000)
+        # binding.irb
+        # Typhoeus::Request.new(
+        #   URL,
+        #   method: :post,
+        #   body: "query { poisByDistance(input: { distance: #{distance}, latitude: #{poi['latitude']}, longitude: #{poi['longitude']} }){ id uniqId distance }}",
+        #   headers: HEADERS
+        # )
         execute_query("query { poisByDistance(input: { distance: #{distance}, latitude: #{poi['latitude']}, longitude: #{poi['longitude']} }){ id uniqId distance }}")['poisByDistance'].drop 1
       rescue StandardError => e
         p :ERROR, e
