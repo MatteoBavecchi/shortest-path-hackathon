@@ -7,7 +7,16 @@ import {
   Tooltip,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-
+import L from 'leaflet';
+// Crea un'icona personalizzata
+const customMarkerIcon = L.icon({
+  iconUrl: 'https://images.emojiterra.com/twitter/v14.0/512px/1f535.png', // URL dell'immagine del marker
+  iconSize: [10, 10], // dimensioni dell'icona
+  iconAnchor: [0, 0], // punto dell'icona che corrisponderà alla posizione del marker
+  popupAnchor: [0, 0], // punto relativo all'icona dove verrà ancorato il popup
+  shadowSize: [0, 0], // dimensioni dell'ombra
+  shadowAnchor: [0, 0] // punto dell'ombra che corrisponderà all'ombra del marker
+});
 interface IPoiProps {
   id: string;
   uniqId: string;
@@ -112,20 +121,20 @@ function App() {
 
   return (
     <div className='relative'>
+          <div className='absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10'>
+      <div onClick={() => setDarkMode(!darkMode)} style={{ cursor: "pointer", fontSize:"35px", color:"white" }}>
+        {darkMode ? '☀' : '☾'}
+      </div>
+      </div>
       <div className='absolute top-10 left-10 mt-56 w-1/4 h-64 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10'>
-        <label className='p-[6px]'>Dark Mode</label>
-        <input
-          type='checkbox'
-          checked={darkMode}
-          onChange={() => setDarkMode(!darkMode)}
-          style={{ background: '#73AD21' }}
-        />
+
+        
         {pois.length ? (
           <>
             <select
               onChange={handlePointAChange}
               id='countries'
-              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 my-3'
+              className='w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
             >
               <option>Punto di partenza</option>
               {pois
@@ -139,7 +148,7 @@ function App() {
             <select
               onChange={handlePointBChange}
               id='countries'
-              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+              className='w-full p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
             >
               <option>Punto di arrivo</option>
               {pois
@@ -207,7 +216,7 @@ function App() {
         />
         {poisOnMap?.length &&
           poisOnMap?.map((point, index) => (
-            <Marker position={[point.latitude, point.longitude]} key={index}>
+            <Marker icon={customMarkerIcon} position={[point.latitude, point.longitude]} key={index}>
               <Tooltip
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
