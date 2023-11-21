@@ -15,7 +15,7 @@ const customMarkerIcon = L.icon({
   iconAnchor: [0, 0], // punto dell'icona che corrisponderà alla posizione del marker
   popupAnchor: [0, 0], // punto relativo all'icona dove verrà ancorato il popup
   shadowSize: [0, 0], // dimensioni dell'ombra
-  shadowAnchor: [0, 0] // punto dell'ombra che corrisponderà all'ombra del marker
+  shadowAnchor: [0, 0], // punto dell'ombra che corrisponderà all'ombra del marker
 });
 interface IPoiProps {
   id: string;
@@ -121,14 +121,15 @@ function App() {
 
   return (
     <div className='relative'>
-          <div className='absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10'>
-      <div onClick={() => setDarkMode(!darkMode)} style={{ cursor: "pointer", fontSize:"35px", color:"white" }}>
-        {darkMode ? '☀' : '☾'}
-      </div>
+      <div className='absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10'>
+        <div
+          onClick={() => setDarkMode(!darkMode)}
+          style={{ cursor: 'pointer', fontSize: '35px', color: 'white' }}
+        >
+          {darkMode ? '☀' : '☾'}
+        </div>
       </div>
       <div className='absolute top-10 left-10 mt-56 w-1/4 h-64 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10'>
-
-        
         {pois.length ? (
           <>
             <select
@@ -216,7 +217,13 @@ function App() {
         />
         {poisOnMap?.length &&
           poisOnMap?.map((point, index) => (
-            <Marker icon={customMarkerIcon} position={[point.latitude, point.longitude]} key={index}>
+            <Marker
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              icon={customMarkerIcon}
+              position={[point.latitude, point.longitude]}
+              key={index}
+            >
               <Tooltip
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
@@ -226,7 +233,7 @@ function App() {
               </Tooltip>
             </Marker>
           ))}
-        <Polyline pathOptions={{ color: 'lime' }} positions={polyline} />
+        <Polyline pathOptions={{ color: '#6b7280' }} positions={polyline} />
       </MapContainer>
     </div>
   );
