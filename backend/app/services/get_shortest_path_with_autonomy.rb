@@ -2,6 +2,8 @@
 
 require 'net/http'
 
+RECHARGING_POINTS = ["341","342","302","310","343","332","364","296","292","304","327","284","282","372","349","308","368","353","275","299","351","286","279","328","307","294","347","306","350","366","325","277","280","285","371","370","287","329","278","311","346","281","272","314","357","361","330","362","367","271"]
+
 class GetShortestPathWithAutonomy
   URL = URI('https://stg.locatorapi.io/api/graphql')
   HEADERS = {
@@ -44,7 +46,7 @@ class GetShortestPathWithAutonomy
       end
       hydra.run
 
-      r = graph_struct.shortest_path_with_autonomy_and_recharge(from, to, autonomy_limit)
+      r = graph_struct.shortest_path_with_autonomy_and_recharge(from, to, autonomy_limit, RECHARGING_POINTS)
       pp r
       r
     rescue StandardError => e
