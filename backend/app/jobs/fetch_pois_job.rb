@@ -4,6 +4,6 @@ class FetchPoisJob < ApplicationJob
   queue_as :default
 
   def perform
-    GetShortestPath.fetch_all
+    PathRetriever::Base.fetch_all
   end
 end
