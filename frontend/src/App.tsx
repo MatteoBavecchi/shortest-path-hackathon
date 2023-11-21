@@ -71,8 +71,6 @@ const handleFindRoute = async (
 ): Promise<IFindRouteResponseProps> => {
   const { pointA, pointB } = props;
 
-  console.log('INIZIA LA CHIAMATA');
-
   try {
     const response = await fetch(
       `http://localhost:5173/api/shortest_path?from=${pointA}&to=${pointB}`,
@@ -107,25 +105,6 @@ function App() {
   const handlePointBChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setPointB(event.target.value);
   };
-
-  // useEffect(() => {
-  //   if (pointA && pointB) {
-  //     console.log('FATTA');
-
-  //     handleFindRoute({ pointA, pointB }).then((data) => {
-  //       console.log(data);
-  //       setPolyline(
-  //         data?.path?.map((point) => [
-  //           pois.find((poi) => poi.id === point)?.latitude || 0,
-  //           pois.find((poi) => poi.id === point)?.longitude || 0,
-  //         ]),
-  //       );
-  //       setPoisOnMap(
-  //         pois.filter((poi) => data.path.find((item) => item === poi.id)),
-  //       );
-  //     });
-  //   }
-  // }, [pointA, pointB, pois]);
 
   const getIcon = (icon: string) => {
     return L.icon({
@@ -191,9 +170,10 @@ function App() {
                       data.path.find((item) => item === poi.id)
                     )
                   );
-                  setTotalDistance(
-                    Math.round(data.total_distance / 1000).toString()
-                  );
+                  if (typeof data.total_distance === 'number')
+                    setTotalDistance(Math.round(data.total_distance / 1000).toString());
+                  else
+                    setTotalDistance('');
                 });
               }}
               className="w-full p-2 mt-6  mb-2 bg-white rounded-lg bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10  text-white  z-10 hover:bg-[#fed683] hover:text-black "
