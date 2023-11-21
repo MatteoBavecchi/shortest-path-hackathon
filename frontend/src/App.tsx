@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   MapContainer,
   Marker,
@@ -32,8 +32,7 @@ interface IPoiProps {
 }
 
 interface IFindRouteInputProps {
-  pointA: string;
-  pointB: string;
+  stops: string[];
 }
 
 interface IFindRouteResponseProps {
@@ -69,16 +68,25 @@ const getPois = async (): Promise<IPoiProps[]> => {
 const handleFindRoute = async (
   props: IFindRouteInputProps,
 ): Promise<IFindRouteResponseProps> => {
-  const { pointA, pointB } = props;
-
+  const { stops } = props;
   try {
     const response = await fetch(
-      `http://localhost:5173/api/shortest_path?from=${pointA}&to=${pointB}`,
+      `http://localhost:5173/api/shortest_path_with_stages?${stops
+        .map((stop) => `stops[]=${stop}`)
+        .join('&')}`,
     );
 
     if (response.ok) {
-      const data = await response.json();
-      return data;
+      const data = (await response.json()) as IFindRouteResponseProps[];
+      const arrayPath = [...data.map((item) => item.path.map((e) => e))].flat();
+      const arrayTotalDistance = [
+        ...data.map((item) => item.total_distance),
+      ].flat();
+
+      return {
+        path: arrayPath,
+        total_distance: arrayTotalDistance.reduce((acc, curr) => acc + curr, 0),
+      };
     } else {
       console.error('Error:', response.status);
     }
@@ -89,23 +97,49 @@ const handleFindRoute = async (
 };
 
 function App() {
-  const [pointA, setPointA] = useState<string>('');
-  const [pointB, setPointB] = useState<string>('');
+  const [stops, setStops] = useState<string[]>([]);
   const [darkMode, setDarkMode] = useState(true);
   const [pois, setPois] = useState<IPoiProps[]>([]);
   const [poisOnMap, setPoisOnMap] = useState<IPoiProps[]>([]);
   const [highlightedPoisOnMap, setHighlightedPoisOnMap] = useState<IPoiProps[]>([]);
   const [totalDistance, setTotalDistance] = useState<string>();
-  const [polyline, setPolyline] = useState<number[][]>([]); // pois?.map((poi) => [poi.latitude, poi.longitude])
+  const [polyline, setPolyline] = useState<number[][]>([]);
 
-  const handlePointAChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setPointA(event.target.value);
+  const handlePointChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+    index: number,
+  ) => {
+    setStops((prev) => {
+      prev[index] = event.target.value;
+      return [...prev];
+    });
   };
 
-  const handlePointBChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setPointB(event.target.value);
+  const handlePointRemove = (index: number) => {
+    setStops((prev) => {
+      return [...prev.filter((_, i) => i !== index)];
+    });
   };
 
+  useEffect(() => {
+    if (stops?.length > 1) {
+      console.log(stops);
+
+      handleFindRoute({ stops }).then((data) => {
+        console.log(data);
+        setPolyline(
+          data?.path?.map((point) => [
+            pois.find((poi) => poi.id === point)?.latitude || 0,
+            pois.find((poi) => poi.id === point)?.longitude || 0,
+          ]),
+        );
+        setPoisOnMap(
+          pois.filter((poi) => data.path.find((item) => item === poi.id)),
+        );
+        setTotalDistance(Math.round(data.total_distance / 1000).toString());
+      });
+    }
+  }, [stops, pois]);
   const getIcon = (icon: string) => {
     return L.icon({
       iconUrl: icon,
@@ -114,76 +148,58 @@ function App() {
   }
 
   return (
-    <div className="relative">
-      <div className="absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10">
+    <div className='relative'>
+      <div className='absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10'>
         <div
           onClick={() => setDarkMode(!darkMode)}
-          style={{ cursor: "pointer", fontSize: "35px", color: "white" }}
+          style={{ cursor: 'pointer', fontSize: '35px', color: 'white' }}
         >
-          {darkMode ? "☀" : "☾"}
+          {darkMode ? '☀' : '☾'}
         </div>
       </div>
-      <div className="absolute top-10 left-10 mt-56 w-1/4 h-64 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10">
+      <div className='absolute top-10 left-10 mt-56 w-1/4 h-64 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10'>
         {pois.length ? (
           <>
             <select
-              onChange={handlePointAChange}
-              id="countries"
-              className="w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
+              onChange={(event) => handlePointChange(event, 0)}
+              id='countries'
+              className='w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
             >
               <option>Punto di partenza</option>
               {pois
-                .filter((poi) => poi.id !== pointB)
+                // .filter((poi) => !stops.find((stop) => poi.id === stop))
                 .map((poi) => (
-                  <option key={"start_".concat(poi.id)} value={poi.id}>
+                  <option key={'0_'.concat(poi.id)} value={poi.id}>
                     {poi.name}
                   </option>
                 ))}
             </select>
-            <select
-              onChange={handlePointBChange}
-              id="countries"
-              className="w-full p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
-            >
-              <option>Punto di arrivo</option>
-              {pois
-                .filter((poi) => poi.id !== pointA)
-                .map((poi) => (
-                  <option key={"end_".concat(poi.id)} value={poi.id}>
-                    {poi.name}
-                  </option>
-                ))}
-            </select>
-            <button
-              disabled={!pointA || !pointB}
-              onClick={() => {
-                handleFindRoute({ pointA, pointB }).then((data) => {
-                  console.log(data);
-                  setPolyline(
-                    data?.path?.map((point) => [
-                      pois.find((poi) => poi.id === point)?.latitude || 0,
-                      pois.find((poi) => poi.id === point)?.longitude || 0,
-                    ])
-                  );
-                  setHighlightedPoisOnMap(
-                    pois.filter((poi) =>
-                      data.path.find((item) => item === poi.id)
-                    )
-                  );
-                  if (typeof data.total_distance === 'number')
-                    setTotalDistance(Math.round(data.total_distance / 1000).toString());
-                  else
-                    setTotalDistance('');
-                });
-              }}
-              className="w-full p-2 mt-6  mb-2 bg-white rounded-lg bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10  text-white  z-10 hover:bg-[#fed683] hover:text-black "
-            >
-              Calcola il percorso
-            </button>
+            {stops?.map((_, index) => (
+              <div className='flex-row items-center'>
+                <select
+                  key={`select_number_${index}`}
+                  onChange={(event) => handlePointChange(event, index + 1)}
+                  id='countries'
+                  className='p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
+                >
+                  <option>Aggiungi fermata</option>
+                  {pois
+                    // .filter((poi) => !stops.find((item) => poi.id === item))
+                    .map((poi) => (
+                      <option key={`${index + 1}_${poi.id}`} value={poi.id}>
+                        {poi.name}
+                      </option>
+                    ))}
+                </select>
+                <button onClick={() => handlePointRemove(index)}>
+                  Rimuovi
+                </button>
+              </div>
+            ))}
             {totalDistance && <span>Distanza totale: {totalDistance} Km</span>}
           </>
         ) : (
-          <p className="pl-2">Loading data...</p>
+          <p className='pl-2'>Loading data...</p>
         )}
       </div>
 
@@ -191,7 +207,7 @@ function App() {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         center={[43, 10.69222]}
-        className="w-100% h-screen"
+        className='w-100% h-screen'
         zoom={6}
         minZoom={3}
         maxZoom={19}
@@ -205,13 +221,13 @@ function App() {
           setPoisOnMap(data);
         }}
         scrollWheelZoom={true}
-        style={{ position: "relative", zIndex: 1 }}
+        style={{ position: 'relative', zIndex: 1 }}
       >
         <TileLayer
           url={
             darkMode
-              ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
-              : "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+              ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png'
+              : 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png'
           }
         />
         {poisOnMap?.length &&
