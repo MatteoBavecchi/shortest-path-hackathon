@@ -124,6 +124,8 @@ function App() {
 
   const getIcon = (status: string) => {
     return L.icon({
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       iconUrl: markerIconUrls[status],
       ...markerIconProps,
     });
@@ -173,13 +175,11 @@ function App() {
               className='w-full mt-2 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
             >
               <option>Punto di partenza</option>
-              {pois
-                // .filter((poi) => !stops.find((stop) => poi.id === stop))
-                .map((poi) => (
-                  <option key={'0_'.concat(poi.id)} value={poi.id}>
-                    {poi.name}
-                  </option>
-                ))}
+              {pois.map((poi) => (
+                <option key={'0_'.concat(poi.id)} value={poi.id}>
+                  {poi.name}
+                </option>
+              ))}
             </select>
             {stops?.map((_, index) => (
               <div
