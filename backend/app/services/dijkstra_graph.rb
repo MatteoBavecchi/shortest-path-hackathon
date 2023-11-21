@@ -100,7 +100,7 @@ class DijkstraGraph
     find_path dest
 
     actual_distance = if @distance[dest] != INFINITY
-                        @distance[dest]
+                        @distance[dest].round
                       else
                         'no path'
                       end
