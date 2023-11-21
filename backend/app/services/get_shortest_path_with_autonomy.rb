@@ -27,6 +27,11 @@ class GetShortestPathWithAutonomy
       hydra = Typhoeus::Hydra.hydra
       all_pois.map do |poi|
         request = neighbours(poi: poi)
+        request.on_headers do |response|
+          if response.code != 200
+            raise "Request failed"
+          end
+        end
         request.on_complete do |response|
           pois = JSON.parse(response.body)["data"]['poisByDistance'].drop 1
           pois.each { |neighbour| graph_struct.add_edge(poi['id'], neighbour['id'], neighbour['distance']) }
