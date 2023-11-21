@@ -107,8 +107,6 @@ class DijkstraGraph
     { path: @path, total_distance: actual_distance }
   end
 
-  # print result
-
   def print_result
     @graph_paths.each do |graph|
       puts graph

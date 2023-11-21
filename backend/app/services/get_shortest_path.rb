@@ -37,12 +37,15 @@ class GetShortestPath
         # end
       end
       hydra.run
-
+      p :RUN
+      p from
+      p to
       r = graph_struct.shortest_path(from, to)
       pp r
       r
     rescue StandardError => e
       p :GetShortestPath_ERROR, e
+      p e.backtrace
       nil
     end
 
