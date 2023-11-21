@@ -120,7 +120,7 @@ function App() {
     const index: number = stops.indexOf(id);
     if (index > -1) {
       setStops((prev) => {
-        return stops.filter((_) => _ !== id);
+        return prev.filter((_) => _ !== id);
       });
     }
   };
@@ -186,7 +186,7 @@ function App() {
                 className='flex-row items-center'
               >
                 <select
-                  value={stops.length > 1 ? stops[index + 1] : 'init'}
+                  value={stops[index + 1] || 'init'}
                   onChange={(event) => handlePointChange(event, index + 1)}
                   className='p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
                 >
@@ -281,4 +281,3 @@ function App() {
 }
 
 export default App;
-
