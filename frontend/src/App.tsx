@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import {
+  MapContainer,
+  Marker,
+  Polyline,
+  TileLayer,
+  Tooltip,
+} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface IPoiProps {
@@ -15,7 +21,10 @@ interface IFindRouteInputProps {
   pointB: string;
 }
 
-interface IFindRouteResponseProps extends Omit<IPoiProps, 'name'> {}
+interface IFindRouteResponseProps {
+  path: string[];
+  total_distance: number;
+}
 
 const getPois = async (): Promise<IPoiProps[]> => {
   try {
@@ -44,20 +53,15 @@ const getPois = async (): Promise<IPoiProps[]> => {
 
 const handleFindRoute = async (
   props: IFindRouteInputProps,
-): Promise<IFindRouteResponseProps[]> => {
+): Promise<IFindRouteResponseProps> => {
   const { pointA, pointB } = props;
+
+  console.log('INIZIA LA CHIAMATA');
+
   try {
-    const response = await fetch('http://localhost:3000/shortest_path', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer c3dbd8793636e5b9e173601bdb0bb191',
-      },
-      body: JSON.stringify({
-        from: pointA,
-        to: pointB,
-      }),
-    });
+    const response = await fetch(
+      `http://localhost:5173/api/shortest_path?from=${pointA}&to=${pointB}`,
+    );
 
     if (response.ok) {
       const data = await response.json();
@@ -68,15 +72,16 @@ const handleFindRoute = async (
   } catch (error) {
     console.error('Error:', error);
   }
-  return [];
+  return { path: [], total_distance: 0 };
 };
 
 function App() {
-  const [pointA, setPointA] = useState<string>('1');
-  const [pointB, setPointB] = useState<string>('2');
+  const [pointA, setPointA] = useState<string>('');
+  const [pointB, setPointB] = useState<string>('');
   const [darkMode, setDarkMode] = useState(true);
-  const [route, setRoute] = useState<number[]>([]);
   const [pois, setPois] = useState<IPoiProps[]>([]);
+  const [poisOnMap, setPoisOnMap] = useState<IPoiProps[]>([]);
+  const [polyline, setPolyline] = useState<number[][]>([]); // pois?.map((poi) => [poi.latitude, poi.longitude])
 
   const handlePointAChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setPointA(event.target.value);
@@ -85,6 +90,25 @@ function App() {
   const handlePointBChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setPointB(event.target.value);
   };
+
+  // useEffect(() => {
+  //   if (pointA && pointB) {
+  //     console.log('FATTA');
+
+  //     handleFindRoute({ pointA, pointB }).then((data) => {
+  //       console.log(data);
+  //       setPolyline(
+  //         data?.path?.map((point) => [
+  //           pois.find((poi) => poi.id === point)?.latitude || 0,
+  //           pois.find((poi) => poi.id === point)?.longitude || 0,
+  //         ]),
+  //       );
+  //       setPoisOnMap(
+  //         pois.filter((poi) => data.path.find((item) => item === poi.id)),
+  //       );
+  //     });
+  //   }
+  // }, [pointA, pointB, pois]);
 
   return (
     <div className='relative'>
@@ -104,10 +128,13 @@ function App() {
               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 my-3'
             >
               <option>Punto di partenza</option>
-              <option value='US'>United States</option>
-              <option value='CA'>Canada</option>
-              <option value='FR'>France</option>
-              <option value='DE'>Germany</option>
+              {pois
+                .filter((poi) => poi.id !== pointB)
+                .map((poi) => (
+                  <option key={'start_'.concat(poi.id)} value={poi.id}>
+                    {poi.name}
+                  </option>
+                ))}
             </select>
             <select
               onChange={handlePointBChange}
@@ -115,13 +142,32 @@ function App() {
               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
             >
               <option>Punto di arrivo</option>
-              <option value='US'>United States</option>
-              <option value='CA'>Canada</option>
-              <option value='FR'>France</option>
-              <option value='DE'>Germany</option>
+              {pois
+                .filter((poi) => poi.id !== pointA)
+                .map((poi) => (
+                  <option key={'end_'.concat(poi.id)} value={poi.id}>
+                    {poi.name}
+                  </option>
+                ))}
             </select>
             <button
-              onClick={() => handleFindRoute({ pointA, pointB })}
+              disabled={!pointA || !pointB}
+              onClick={() => {
+                handleFindRoute({ pointA, pointB }).then((data) => {
+                  console.log(data);
+                  setPolyline(
+                    data?.path?.map((point) => [
+                      pois.find((poi) => poi.id === point)?.latitude || 0,
+                      pois.find((poi) => poi.id === point)?.longitude || 0,
+                    ]),
+                  );
+                  setPoisOnMap(
+                    pois.filter((poi) =>
+                      data.path.find((item) => item === poi.id),
+                    ),
+                  );
+                });
+              }}
               className='w-full p-2 mt-6  mb-2 bg-white rounded-lg bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10  text-white  z-10 hover:bg-[#fed683] hover:text-black '
             >
               Calcola la rotta
@@ -147,6 +193,7 @@ function App() {
         whenReady={async () => {
           const data = await getPois();
           setPois(data);
+          setPoisOnMap(data);
         }}
         scrollWheelZoom={true}
         style={{ position: 'relative', zIndex: 1 }}
@@ -158,10 +205,19 @@ function App() {
               : 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png'
           }
         />
-        {pois.length &&
-          pois.map((point, index) => (
-            <Marker position={[point.latitude, point.longitude]} key={index} />
+        {poisOnMap?.length &&
+          poisOnMap?.map((point, index) => (
+            <Marker position={[point.latitude, point.longitude]} key={index}>
+              <Tooltip
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                sticky
+              >
+                {point.name}
+              </Tooltip>
+            </Marker>
           ))}
+        <Polyline pathOptions={{ color: 'lime' }} positions={polyline} />
       </MapContainer>
     </div>
   );
