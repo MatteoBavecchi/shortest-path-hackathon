@@ -116,13 +116,10 @@ function App() {
     });
   };
 
-  const handlePointRemove = (id: string) => {
-    const index: number = stops.indexOf(id);
-    if (index > -1) {
-      setStops((prev) => {
-        return prev.filter((_) => _ !== id);
-      });
-    }
+  const handlePointRemove = (index: number) => {
+    setStops((prev) => {
+      return prev.slice(0, index).concat(prev.slice(index + 1));
+    });
   };
 
   const getIcon = (status: string) => {
@@ -202,7 +199,7 @@ function App() {
                   ))}
                 </select>{' '}
                 {index < stops.length - 1 && (
-                  <button onClick={() => handlePointRemove(stops[index + 1])}>
+                  <button onClick={() => handlePointRemove(index + 1)}>
                     Rimuovi
                   </button>
                 )}
