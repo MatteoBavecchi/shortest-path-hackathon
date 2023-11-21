@@ -23,11 +23,8 @@ class GetShortestPath
     #
     def call(from:, to:)
       graph_struct = DijkstraGraph.new
-      pois = all_pois()
-      from = pois.find { _1['id'] == from.to_s }
-      to = pois.find { _1['id'] == to.to_s }
       hydra = Typhoeus::Hydra.hydra
-      pois = pois.map do |poi|
+      all_pois.map do |poi|
         request = neighbours(poi: poi)
         request.on_complete do |response|
           pois = JSON.parse(response.body)["data"]['poisByDistance'].drop 1
@@ -41,14 +38,13 @@ class GetShortestPath
       end
       hydra.run
 
-      return graph_struct.shortest_path(from, to)
-
-      # returns the path as an ordered list of pois ids
-      # path.map { _1[:id] }
-
-      pois
+      from = '295'
+      to = '370'
+      r = graph_struct.shortest_path(from, to)
+      pp r
+      r
     rescue StandardError => e
-      p :ERROR, e
+      p :GetShortestPath_ERROR, e
       nil
     end
 
@@ -58,13 +54,13 @@ class GetShortestPath
         p :QUERY, query
         response = LocatorAPI.post(URL.path, { query: query }.to_json, HEADERS)
         JSON.parse(response.body)['data']
+      rescue StandardError => e
+        p :QUERY_ERROR, e
+        []
       end
 
       def all_pois
         execute_query('query { pois { id uniqId latitude longitude} }')['pois']
-      rescue StandardError => e
-        p :ERROR, e
-        []
       end
 
       def neighbours(poi:, distance: 93000)
