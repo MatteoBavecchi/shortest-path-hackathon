@@ -32,36 +32,42 @@ class GetShortestPath
           end
         end
         request.on_complete do |response|
-          pois = JSON.parse(response.body)["data"]['poisByDistance'].drop 1
+          pois = JSON.parse(response.body)['data']['poisByDistance'].drop 1
           pois.each { |neighbour| graph_struct.add_edge(poi['id'], neighbour['id'], neighbour['distance']) }
         end
         hydra.queue request
-
-        # neighbours(poi: poi).each do |neighbour|
-        #   graph_struct.add_edge(poi['id'], neighbour['id'], neighbour['distance'])
-        # end
       end
       hydra.run
-      p :RUN
-      p from
-      p to
+
       r = graph_struct.shortest_path(from, to)
       pp r
       r
     rescue StandardError => e
-      p :GetShortestPath_ERROR, e
+      p :call__error, e
       p e.backtrace
+      nil
+    end
+
+    def fetch_all
+      hydra = Typhoeus::Hydra.hydra
+      all_pois.map do |poi|
+        request = neighbours(poi: poi)
+        hydra.queue request
+      end
+      hydra.run
+    rescue StandardError => e
+      p :fetch_all__error, e
+      pp e.backtrace
       nil
     end
 
     private
 
       def execute_query(query)
-        p :QUERY, query
         response = LocatorAPI.post(URL.path, { query: query }.to_json, HEADERS)
         JSON.parse(response.body)['data']
       rescue StandardError => e
-        p :QUERY_ERROR, e
+        p :execute_query__error, e
         []
       end
 
@@ -78,7 +84,7 @@ class GetShortestPath
         )
         # execute_query("query { poisByDistance(input: { distance: #{distance}, latitude: #{poi['latitude']}, longitude: #{poi['longitude']} }){ id uniqId distance }}")['poisByDistance'].drop 1
       rescue StandardError => e
-        p :ERROR, e
+        p :neighbours__error, e
         []
       end
   end

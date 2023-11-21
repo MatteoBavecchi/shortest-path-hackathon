@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class FetchPoisJob < ApplicationJob
   queue_as :default
 
   def perform
-    GetShortestPath.call(from: '295', to: '370')
+    GetShortestPath.fetch_all
   end
 end
