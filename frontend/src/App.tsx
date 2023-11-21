@@ -8,15 +8,22 @@ import {
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-// Crea un'icona personalizzata
-const customMarkerIcon = L.icon({
-  iconUrl: 'https://images.emojiterra.com/twitter/v14.0/512px/1f535.png', // URL dell'immagine del marker
+
+const markerIconUrls = {
+  default: "https://images.emojiterra.com/twitter/v14.0/512px/1f535.png",
+  grayed: "grayed.png",
+  highlighted:
+    "https://www.federmobili.it/wp-content/uploads/2021/01/pallino-arancione.png",
+};
+
+const markerIconProps = {
   iconSize: [10, 10], // dimensioni dell'icona
   iconAnchor: [5, 5], // punto dell'icona che corrisponderà alla posizione del marker
   popupAnchor: [0, 0], // punto relativo all'icona dove verrà ancorato il popup
   shadowSize: [0, 0], // dimensioni dell'ombra
   shadowAnchor: [0, 0], // punto dell'ombra che corrisponderà all'ombra del marker
-});
+};
+
 
 interface IPoiProps {
   id: string;
@@ -96,6 +103,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [pois, setPois] = useState<IPoiProps[]>([]);
   const [poisOnMap, setPoisOnMap] = useState<IPoiProps[]>([]);
+  const [pathPoisOnMap, setPathPoisOnMap] = useState<IPoiProps[]>([]);
   const [totalDistance, setTotalDistance] = useState<string>();
   const [polyline, setPolyline] = useState<number[][]>([]);
 
@@ -115,6 +123,13 @@ function App() {
     });
   };
 
+  const getIcon = (status: string) => {
+    return L.icon({
+      iconUrl: markerIconUrls[status],
+      ...markerIconProps,
+    });
+  };
+
   useEffect(() => {
     if (stops?.length > 1) {
       console.log(stops);
@@ -127,10 +142,13 @@ function App() {
             pois.find((poi) => poi.id === point)?.longitude || 0,
           ]),
         );
-        setPoisOnMap(
-          pois.filter((poi) => data.path.find((item) => item === poi.id)),
+        setPathPoisOnMap(
+          pois.filter((poi) => data.path.find((item) => item === poi.id))
         );
-        setTotalDistance(Math.round(data.total_distance / 1000).toString());
+        if (typeof data.total_distance === "number")
+          setTotalDistance(Math.round(data.total_distance / 1000).toString());
+        else
+          setTotalDistance("");
       });
     }
   }, [stops, pois]);
@@ -151,7 +169,7 @@ function App() {
             <select
               onChange={(event) => handlePointChange(event, 0)}
               id="countries"
-              className="w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
+              className="w-full mt-2 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
             >
               <option>Punto di partenza</option>
               {pois
@@ -225,7 +243,25 @@ function App() {
             <Marker
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
-              icon={customMarkerIcon}
+              icon={getIcon("default")}
+              position={[point.latitude, point.longitude]}
+              key={index}
+            >
+              <Tooltip
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                sticky
+              >
+                {point.name}
+              </Tooltip>
+            </Marker>
+          ))}
+        {pathPoisOnMap?.length &&
+          pathPoisOnMap?.map((point, index) => (
+            <Marker
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              icon={getIcon("highlighted")}
               position={[point.latitude, point.longitude]}
               key={index}
             >
