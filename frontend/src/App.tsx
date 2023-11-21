@@ -12,7 +12,7 @@ import L from 'leaflet';
 const customMarkerIcon = L.icon({
   iconUrl: 'https://images.emojiterra.com/twitter/v14.0/512px/1f535.png', // URL dell'immagine del marker
   iconSize: [10, 10], // dimensioni dell'icona
-  iconAnchor: [0, 0], // punto dell'icona che corrisponderà alla posizione del marker
+  iconAnchor: [5, 5], // punto dell'icona che corrisponderà alla posizione del marker
   popupAnchor: [0, 0], // punto relativo all'icona dove verrà ancorato il popup
   shadowSize: [0, 0], // dimensioni dell'ombra
   shadowAnchor: [0, 0], // punto dell'ombra che corrisponderà all'ombra del marker
@@ -136,39 +136,39 @@ function App() {
   }, [stops, pois]);
 
   return (
-    <div className='relative'>
-      <div className='absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10'>
+    <div className="relative">
+      <div className="absolute top-2 right-5 bg-black  rounded-full bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20 px-[10px] text-white   z-10">
         <div
           onClick={() => setDarkMode(!darkMode)}
-          style={{ cursor: 'pointer', fontSize: '35px', color: 'white' }}
+          style={{ cursor: "pointer", fontSize: "35px", color: "white" }}
         >
-          {darkMode ? '☀' : '☾'}
+          {darkMode ? "☀" : "☾"}
         </div>
       </div>
-      <div className='absolute top-10 left-10 mt-56 w-1/4 h-64 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10'>
+      <div className="absolute top-10 left-10 mt-56 w-1/4 bg-black rounded-lg bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-20  text-white p-4 z-10">
         {pois.length ? (
           <>
             <select
               onChange={(event) => handlePointChange(event, 0)}
-              id='countries'
-              className='w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
+              id="countries"
+              className="w-full mt-8 p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
             >
               <option>Punto di partenza</option>
               {pois
                 // .filter((poi) => !stops.find((stop) => poi.id === stop))
                 .map((poi) => (
-                  <option key={'0_'.concat(poi.id)} value={poi.id}>
+                  <option key={"0_".concat(poi.id)} value={poi.id}>
                     {poi.name}
                   </option>
                 ))}
             </select>
             {stops?.map((_, index) => (
-              <div className='flex-row items-center'>
+              <div className="flex-row items-center">
                 <select
                   key={`select_number_${index}`}
                   onChange={(event) => handlePointChange(event, index + 1)}
-                  id='countries'
-                  className='p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
+                  id="countries"
+                  className="p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg"
                 >
                   <option>Aggiungi fermata</option>
                   {pois
@@ -178,16 +178,18 @@ function App() {
                         {poi.name}
                       </option>
                     ))}
-                </select>
-                <button onClick={() => handlePointRemove(index)}>
-                  Rimuovi
-                </button>
+                </select>{" "}
+                {index > 0 && (
+                  <button onClick={() => handlePointRemove(index)}>
+                    Rimuovi
+                  </button>
+                )}
               </div>
             ))}
             {totalDistance && <span>Distanza totale: {totalDistance} Km</span>}
           </>
         ) : (
-          <p className='pl-2'>Loading data...</p>
+          <p className="pl-2">Loading data...</p>
         )}
       </div>
 
@@ -195,7 +197,7 @@ function App() {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         center={[43, 10.69222]}
-        className='w-100% h-screen'
+        className="w-100% h-screen"
         zoom={6}
         minZoom={3}
         maxZoom={19}
@@ -209,13 +211,13 @@ function App() {
           setPoisOnMap(data);
         }}
         scrollWheelZoom={true}
-        style={{ position: 'relative', zIndex: 1 }}
+        style={{ position: "relative", zIndex: 1 }}
       >
         <TileLayer
           url={
             darkMode
-              ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png'
-              : 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png'
+              ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+              : "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
           }
         />
         {poisOnMap?.length &&
@@ -236,7 +238,7 @@ function App() {
               </Tooltip>
             </Marker>
           ))}
-        <Polyline pathOptions={{ color: '#6b7280' }} positions={polyline} />
+        <Polyline pathOptions={{ color: "#6b7280" }} positions={polyline} />
       </MapContainer>
     </div>
   );
