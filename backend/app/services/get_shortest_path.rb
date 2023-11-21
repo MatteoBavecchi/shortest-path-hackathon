@@ -26,7 +26,7 @@ class GetShortestPath
       pois = all_pois()
       from = pois.find { _1['id'] == from.to_s }
       to = pois.find { _1['id'] == to.to_s }
-      hydra = Typhoeus::Hydra.hydra
+      # hydra = Typhoeus::Hydra.hydra
       pois = pois.map do |poi|
         # request = neighbours(poi: poi)
         # request.on_complete do |response|
