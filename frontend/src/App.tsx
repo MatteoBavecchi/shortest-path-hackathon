@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   MapContainer,
   Marker,
@@ -119,10 +119,40 @@ function App() {
   };
 
   const handlePointRemove = (index: number) => {
+    console.log('handlePointRemove', index);
     setStops((prev) => {
-      return [...prev.filter((_, i) => i !== index)];
+      return [...prev].splice(index, 1);
     });
   };
+
+  const renderSelectRoute = useCallback(
+    () =>
+      stops?.map((_, index) => (
+        <div className='flex-row items-center'>
+          <select
+            key={`select_number_${index}`}
+            onChange={(event) => handlePointChange(event, index + 1)}
+            id='countries'
+            className='p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
+          >
+            <option>Aggiungi fermata</option>
+            {pois
+              // .filter((poi) => !stops.find((item) => poi.id === item))
+              .map((poi) => (
+                <option key={`${index + 1}_${poi.id}`} value={poi.id}>
+                  {poi.name}
+                </option>
+              ))}
+          </select>
+          {index !== 0 && index !== (stops.length -1) && (
+            <button onClick={() => handlePointRemove(index + 1)}>
+              Rimuovi
+            </button>
+          )}
+        </div>
+      )),
+    [pois, stops],
+  );
 
   useEffect(() => {
     if (stops?.length > 1) {
@@ -180,28 +210,7 @@ function App() {
                   </option>
                 ))}
             </select>
-            {stops?.map((_, index) => (
-              <div className='flex-row items-center'>
-                <select
-                  key={`select_number_${index}`}
-                  onChange={(event) => handlePointChange(event, index + 1)}
-                  id='countries'
-                  className='p-2 mb-2 bg-black backdrop-filter backdrop-blur-xl bg-opacity-20 outline-none rounded-lg'
-                >
-                  <option>Aggiungi fermata</option>
-                  {pois
-                    // .filter((poi) => !stops.find((item) => poi.id === item))
-                    .map((poi) => (
-                      <option key={`${index + 1}_${poi.id}`} value={poi.id}>
-                        {poi.name}
-                      </option>
-                    ))}
-                </select>
-                <button onClick={() => handlePointRemove(index)}>
-                  Rimuovi
-                </button>
-              </div>
-            ))}
+            {renderSelectRoute()}
             {totalDistance && <span>Distanza totale: {totalDistance} Km</span>}
           </>
         ) : (
