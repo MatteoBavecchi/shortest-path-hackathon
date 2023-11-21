@@ -197,10 +197,8 @@ function App() {
                       </option>
                     ))}
                 </select>{" "}
-                {index < stops.length -1 && (
-                  <button onClick={() => handlePointRemove(index)}>
-                    Rimuovi
-                  </button>
+                {index < stops.length - 1 && (
+                  <button onClick={() => handlePointRemove(index)}>Rimuovi</button>
                 )}
               </div>
             ))}
