@@ -19,12 +19,9 @@ class PathRetriever::GetShortestPath < PathRetriever::Base
         pois.each { |neighbour| @graph_struct.add_edge(poi['id'], neighbour['id'], neighbour['distance']) }
       end
 
-      r = @graph_struct.shortest_path(from, to)
-      pp r
-      r
+      @graph_struct.shortest_path(from, to)
     rescue StandardError => e
       p :call__error, e
-      p e.backtrace
       nil
     end
   end

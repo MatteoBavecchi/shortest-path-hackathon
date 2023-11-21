@@ -24,11 +24,9 @@ class PathRetriever::GetShortestPathWithAutonomy < PathRetriever::Base
         pois.each { |neighbour| @graph_struct.add_edge(poi['id'], neighbour['id'], neighbour['distance']) }
       end
 
-      r = @graph_struct.shortest_path_with_autonomy_and_recharge(from, to, autonomy_limit, RECHARGING_POINTS)
-      pp r
-      r
+      @graph_struct.shortest_path_with_autonomy_and_recharge(from, to, autonomy_limit, RECHARGING_POINTS)
     rescue StandardError => e
-      p :GetShortestPath_ERROR, e
+      p :call__error, e
       nil
     end
   end

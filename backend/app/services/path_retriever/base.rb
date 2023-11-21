@@ -30,7 +30,6 @@ class PathRetriever::Base
       hydra.run
     rescue StandardError => e
       p :fetch_all__error, e
-      pp e.backtrace
       nil
     end
 
